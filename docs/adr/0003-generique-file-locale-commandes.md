@@ -18,4 +18,4 @@ Critères du sujet : un nouveau capteur appairé apparaît avec ses capacités s
 ## Conséquences
 
 - Testé sur la vraie liste publiée par le Pi (`tests/fixtures/bridge-devices.json` : prise S60ZBTPF, détecteur SNZB-04P).
-- Un capteur ajouté plus tard (présence, température…) remonte sans modification de code.
+- Un appareil ajouté plus tard (capteur de présence, télécommande…) remonte sans modification de code.
