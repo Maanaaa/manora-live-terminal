@@ -1,0 +1,22 @@
+name: manora-live-terminal
+
+services:
+  passerelle:
+    build: .
+    container_name: manora-live-passerelle
+    restart: unless-stopped
+    # Réseau de l'hôte : Mosquitto n'écoute que sur 127.0.0.1 (il n'est pas exposé).
+    network_mode: host
+    env_file: .env
+    environment:
+      - QUEUE_FILE=/data/queue.json
+    volumes:
+      - passerelle-data:/data
+    logging:
+      driver: json-file
+      options:
+        max-size: "10m"
+        max-file: "3"
+
+volumes:
+  passerelle-data:
