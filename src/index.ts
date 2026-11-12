@@ -5,7 +5,7 @@ import mqtt from 'mqtt';
 import { ApiError, TerminalApi } from './api.ts';
 import { loadConfig } from './config.ts';
 import { devicesFromBridge } from './devices.ts';
-import { toTerminalEvent, toZ2mSet } from './normalize.ts';
+import { momentaryReset, toTerminalEvent, toZ2mSet } from './normalize.ts';
 import { EventQueue } from './queue.ts';
 import type { KnownDevice, TerminalDevice, Value } from './types.ts';
 
@@ -120,6 +120,8 @@ client.on('message', (topic, raw) => {
   const event = toTerminalEvent(config.terminalId, device, payload);
   if (!event) return;
   queue.push(event);
+  const reset = momentaryReset(event);
+  if (reset) queue.push(reset);
   void flush();
 });
 

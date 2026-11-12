@@ -37,6 +37,18 @@ export function toTerminalEvent(terminal: string, device: KnownDevice, payload: 
   return { terminal, device: device.ieee, model: device.model, readings, ts: now.toISOString() };
 }
 
+/**
+ * Les actions de télécommande (`action: "single"`, `"double"`…) sont des événements ponctuels :
+ * deux appuis identiques donnent la même valeur, et une règle ne se déclencherait qu'au premier.
+ * On renvoie donc juste après un événement `action: null` qui réarme les règles pour l'appui suivant.
+ */
+export function momentaryReset(event: TerminalEvent): TerminalEvent | null {
+  const action = event.readings.action;
+  if (action === undefined || action === null || action === '') return null;
+  const ts = new Date(new Date(event.ts).getTime() + 1).toISOString();
+  return { ...event, readings: { action: null }, ts };
+}
+
 /** Commande de l'API (`terminal.command`) → charge utile de `zigbee2mqtt/<appareil>/set`. */
 export function toZ2mSet(device: KnownDevice, capability: string, value: Value): Record<string, unknown> {
   const binary = device.binaries[capability];
