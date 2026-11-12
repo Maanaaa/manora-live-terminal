@@ -8,7 +8,7 @@ import { join } from 'node:path';
 import { test } from 'node:test';
 
 import { capabilitiesFromExposes, devicesFromBridge } from '../src/devices.ts';
-import { toTerminalEvent, toZ2mSet } from '../src/normalize.ts';
+import { momentaryReset, toTerminalEvent, toZ2mSet } from '../src/normalize.ts';
 import { EventQueue } from '../src/queue.ts';
 
 const bridge = JSON.parse(readFileSync(new URL('./fixtures/bridge-devices.json', import.meta.url), 'utf8'));
@@ -93,4 +93,14 @@ test('file locale : persistée sur disque et relue au redémarrage, bornée', ()
   assert.deepEqual(reloaded.peek(10).map((e) => e.readings.n), [2, 3, 4]);
   reloaded.drop(2);
   assert.deepEqual(new EventQueue(file, 3).peek(10).map((e) => e.readings.n), [4]);
+});
+
+test('télécommande : chaque appui est suivi d’un réarmement (action: null)', () => {
+  const remote = { ...plug, binaries: {} };
+  const press = toTerminalEvent('pi-manora', remote, { action: 'single', battery: 90 }, now)!;
+  const reset = momentaryReset(press);
+  assert.deepEqual(reset?.readings, { action: null });
+  assert.equal(reset?.ts, '2026-11-12T18:00:00.001Z');
+  assert.equal(momentaryReset(toTerminalEvent('pi-manora', plug, { state: 'ON' }, now)!), null);
+  assert.equal(momentaryReset({ ...press, readings: { action: '' } }), null);
 });
